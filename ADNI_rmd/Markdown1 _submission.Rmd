@@ -32,7 +32,7 @@ source("https://neuroconductor.org/neurocLite.R")
 neuro_install('radtools', release = "stable", release_repo = "github")
 ```
 
-```{r radtools-read, results='hold', message=FALSE}
+```{r radtools-read, results='hold', message=FALSE, warning=FALSE}
 library(radtools)
 
 # Path to image directory
