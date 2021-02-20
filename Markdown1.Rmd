@@ -62,6 +62,48 @@ segments(x0=70, x1 = 70, y0 = 65, y1 = 70, col = "red")
 segments(x0=65, x1 = 70, y0 = 70, y1 = 70, col = "red")
 ```
 
+Some of the post-processed PET images use the NIfTI file format. Below is an
+example using the Python library `NiBabel` to compare the images created from
+two different levels of post-processing. Do not attempt to run this code in R,
+as it will likely cause a fatal error. Instead just copy and paste the code
+into a Python interpreter, and make sure you have the necessary libraries 
+installed.
+
+```{python, eval = FALSE}
+##DO NOT RUN IN R##
+import nibabel as nib
+import os
+import matplotlib.pyplot as plt
+
+# somewhat unnecessary with the file structure inside this repo
+dir = 'ADNI_test_files'
+img1 = nib.load(dir + '\\' + os.listdir(dir)[0])
+img2 = nib.load(dir + '\\' + os.listdir(dir)[1])
+
+# load in the image arrays
+img1_data = img1.get_fdata()
+img2_data = img2.get_fdata()
+
+# code borrowed from here:
+# https://nipy.org/nibabel/coordinate_systems.html#introducing-someone
+def show_slices(slices):
+    """ Function to display row of image slices """
+    fig, axes = plt.subplots(1, len(slices), figsize = (20, 10))
+    for i, slice in enumerate(slices):
+        axes[i].imshow(slice.T, origin="lower")
+        
+slice_0 = img1_data[26, :, :]
+slice_1 = img1_data[:, 30, :]
+slice_2 = img1_data[:, :, 16]
+
+slice_3 = img2_data[26, :, :]
+slice_4 = img2_data[:, 30, :]
+slice_5 = img2_data[:, :, 16]
+show_slices([slice_0, slice_1, slice_2, slice_3, slice_4, slice_5])
+
+```
+![Sample NIfTI PET Plots](ADNI_test_files/test.jpg)
+
 ## Project Outline and Analysis Plan
 
 ### State of Current Research
@@ -131,3 +173,6 @@ The project can be broken up into the following main steps:
 +-------------+----------+------------------------------------------------------------------------------------------------------+
 
 While each step has a specified target completion date, this is flexible depending on the unknown complications we will encounter, such as still not having access to the ADNI data despite numerous attempts to reach out to the appropriate parties in charge.
+
+
+
