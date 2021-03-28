@@ -1,0 +1,32 @@
+---
+title: "Capstone Project: ADNI Data - Markdown 2"
+author: "Brian Collica, Ben Searchinger, Ryan Roggenkemper, James Koo"
+date: "3/30/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Model Description
+
+Our model consists of two stages.  Stage one tries to predict $\beta$-amyloid positivity for a given patient.  Research has shown that a $\beta$-amyloid positive status is highly correlated with Alzheimer's Disease, but testing for positivity is costly and invasive to the patient.  We hope to cut down on these costs by accurately predicting a patient's status using other easily accessible data.
+
+Stage two is a deep learning classifier that is fit to tau PET brain scans in order to classify a patient as having AD-related tau pathology or normal tau levels.  The spatial arrangement of the tau protein in the brain has been a topic of recent AD research, and we hope that the deep learning classifier can pick up on these subtle arrangements.  
+
+The ultimate goal is to effectively sort patients which are at high risk for AD using the first stage, and then accurately classify their AD status based on the PET brain scans.  The idea is that a patient would only receive a PET scan if they are labeled as $\beta$-amyloid in the first stage.  If successful, we hope this technique can cut down on unnecessary costly procedures which are invasive and potentially harmful to the patient.  
+
+We plan to evaluate our success with the following metrics:
+
+ - First Stage Accuracy, False Positive, False Negative, & Misclassification Rates
+ 
+ - Second Stage Accuracy, False Positive, False Negative, & Misclassification Rates
+ 
+ - Combined Model Accuracy, False Positive, False Negative, & Misclassification Rates
+ 
+Ideally, we would want to keep a low false negative rate in the first stage model so that we are excluding as few patients as possible from being potentially classified correctly in the second stage.  That being said, some other metrics of interest will be the distribution of characteristics among those labeled as $\beta$-amyloid negative in the first stage, and if there is any particular information which can be used to fine tune the model.  
+
+## First Stage Initial Fits
+
+
