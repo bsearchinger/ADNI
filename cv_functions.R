@@ -19,7 +19,9 @@ classStats <- function(pred, truth, cutoff, lt = FALSE) {
   
   out <- list(mis_class = mis_class,
               true_pos = tp,
-              false_pos = fp)
+              false_pos = fp,
+              true_neg = tn,
+              false_neg = fn)
   
   return(out)
 }

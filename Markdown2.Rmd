@@ -19,14 +19,157 @@ The ultimate goal is to effectively sort patients which are at high risk for AD 
 
 We plan to evaluate our success with the following metrics:
 
- - First Stage Accuracy, False Positive, False Negative, & Misclassification Rates
+ - First Stage Accuracy, True Positive, False Negative, & Misclassification Rates
  
- - Second Stage Accuracy, False Positive, False Negative, & Misclassification Rates
+ - Second Stage Accuracy, True Positive, False Negative, & Misclassification Rates
  
- - Combined Model Accuracy, False Positive, False Negative, & Misclassification Rates
+ - Combined Model Accuracy, True Positive, False Negative, & Misclassification Rates
  
 Ideally, we would want to keep a low false negative rate in the first stage model so that we are excluding as few patients as possible from being potentially classified correctly in the second stage.  That being said, some other metrics of interest will be the distribution of characteristics among those labeled as $\beta$-amyloid negative in the first stage, and if there is any particular information which can be used to fine tune the model.  
 
 ## First Stage Initial Fits
+
+### Description
+
+For the first stage model, we used the ADNIMERGE dataset available on the ADNI website.  This dataset includes many key variables of interest for each ADNI participant.  The dataset was filtered to include only patients who had cerebrospinal-fluid measurements taken at baseline.  Each patient's amyloid measurements were measured in a lab at the University of Pennsylvania and included in the UPENNBIOMK_MASTER dataset, also available on the ADNI website.  We combined the two datasets to get 1,087 unique baseline observations. 
+
+The two initial models considered were (1) a linear regression to predict `beta_csf` - the specific level of $\beta$-amyloid for a given patient, and (2) a logistic regression to predict positivity status, `beta_pos`.  The variable `beta_pos` was coded as 1 if an individual had `beta_csf` less than 192 and 0 otherwise.  The level of 192 is a well-established clinical cutoff point for determining $\beta$-amyloid positivity.  In the linear regression model, patients were classified as $\beta$-amyloid positive if their *predicted* amyloid level was below 192.  
+
+The linear and logistic models were both fit using the following variables known to be linked to AD:
+
+  - Age
+
+  - Sex (1 for Male 0 for Female)
+
+  - Immediate Memory Recall Score in the Rey Auditory Verbal Learning Test (RAVLT)
+
+  - Presence of APO$\epsilon-4$ Gene
+
+    - `APOE$_1`  = 1 if only one allele is present
+    
+    - `APOE$_2`  = 1 if two alleles are present
+    
+    
+Both models were also fit again with the addition of two variables containing brain volumetrics estimated from MRI scans:
+
+  - Whole Brain Volume
+  
+  - Hippocampus Volume
+  
+  
+### Code and Output
+
+The first stage models are fit using R and requires the following packages: `readr`, `dplyr`, `stringr`, and `origami`.  The following code reads in the data, filters by baseline visit, and renames the baseline variables of interest.
+
+```{r, message=FALSE, warning=FALSE}
+# Load Packages ####
+library(readr)
+library(dplyr)
+library(stringr)
+library(origami)
+
+# Read Data ####
+beta_tau <- read_csv("AmyloidData/beta_tau_csf_new_vars.csv")
+source("cv_functions.R")
+
+# Filter By Baseline Visit ####
+baseline <- beta_tau %>%
+  filter(VISCODE == "bl")
+
+bl_na1 <- which(is.na(baseline$beta_pos) | is.na(baseline$RAVLT_immediate_bl) | 
+                  is.na(baseline$Hippocampus) | is.na(baseline$WholeBrain))
+bl_na2 <- which(is.na(baseline$beta_pos) | is.na(baseline$RAVLT_immediate_bl))
+
+# Rename _bl Variables ####
+# Rename _bl Variables ####
+bl_rm <- c(27, 54, 55)
+baseline_1 <- baseline[-(bl_na1), -(bl_rm)]
+baseline_1 <- rename(
+  baseline_1, 
+  RAVLT_immediate = RAVLT_immediate_bl,
+  Hippocampus = Hippocampus_bl,
+  WholeBrain = WholeBrain_bl)
+
+baseline_2 <- baseline[-(bl_na2), -(bl_rm)]
+baseline_2 <- rename(
+  baseline_2, 
+  RAVLT_immediate = RAVLT_immediate_bl,
+  Hippocampus = Hippocampus_bl,
+  WholeBrain = WholeBrain_bl)
+```
+
+
+The linear and logistic fits using all the baseline data can be seen below.
+
+```{r, message=FALSE, warning=FALSE}
+# Initial Model Fits ####
+# Including MRI data
+bl_cont <- lm(beta_csf ~ AGE + MALE + APOE4_1 + APOE4_2 + RAVLT_immediate 
+              + Hippocampus + WholeBrain, 
+              data = baseline_1)
+bl_logit <- glm(beta_pos ~ AGE + MALE + APOE4_1 + APOE4_2 + RAVLT_immediate 
+                + Hippocampus + WholeBrain, 
+                data = baseline_2, family = "binomial")
+
+# Excluding MRI Data
+bl_cont2 <- lm(beta_csf ~ AGE + MALE + APOE4_1 + APOE4_2 + RAVLT_immediate, 
+               data = baseline_1)
+bl_logit2 <- glm(beta_pos ~ AGE + MALE + APOE4_1 + APOE4_2 + RAVLT_immediate, 
+                 data = baseline_2, family = "binomial")
+```
+
+
+5-fold crass-validation was then run for each of the four initial baseline models.  The following code performs the cross-validation and also calculates performance metrics of interest including the misclassification, true positive, and false positive rates.  Specific functions needed for the cross-validation and metrics calculations are defined in the `cv_functions.R` script.  
+
+```{r, message=FALSE, warning=FALSE}
+# 5-Fold Cross Validation ####
+# Make Folds
+bl_folds1 <- folds_vfold(nrow(baseline_1), V = 5)
+bl_folds2 <- folds_vfold(nrow(baseline_2), V = 5)
+
+# Linear Models ####
+bl_cv_lm <- origami::cross_validate(
+  cv_fun = cv_lm, folds = bl_folds1, data = baseline_1,
+  reg_form = "beta_csf ~ AGE + MALE + APOE4_1 + APOE4_2 + RAVLT_immediate + Hippocampus + WholeBrain")
+
+bl_cv_lm2 <- origami::cross_validate(
+  cv_fun = cv_lm, folds = bl_folds2, data = baseline_2,
+  reg_form = "beta_csf ~ AGE + MALE + APOE4_1 + APOE4_2 + RAVLT_immediate")
+
+# Logistic Models ####
+bl_cv_logit <- origami::cross_validate(
+  cv_fun = cv_logit, folds = bl_folds1, data = baseline_1,
+  reg_form = "beta_pos ~ AGE + MALE + APOE4_1 + APOE4_2 + RAVLT_immediate + Hippocampus + WholeBrain")
+
+bl_cv_logit2 <- origami::cross_validate(
+  cv_fun = cv_logit, folds = bl_folds2, data = baseline_2,
+  reg_form = "beta_pos ~ AGE + MALE + APOE4_1 + APOE4_2 + RAVLT_immediate")
+
+# Linear Models Stats ####
+bl_lm_stats1 <- colMeans(dplyr::bind_rows(bl_cv_lm$c_stats))
+bl_lm_stats2 <- colMeans(dplyr::bind_rows(bl_cv_lm2$c_stats))
+
+# Logistic Model Stats ####
+bl_log_stats1 <- colMeans(dplyr::bind_rows(bl_cv_logit$c_stats))
+bl_log_stats2 <- colMeans(dplyr::bind_rows(bl_cv_logit2$c_stats))
+
+# Combine Data ####
+bl_summary <- dplyr::bind_rows(
+        bl_lm_stats1, bl_lm_stats2, bl_log_stats1, bl_log_stats2)
+row.names(bl_summary) <- c(
+        "Linear w/MRI", "Linear w/o MRI", "Logistic w/MRI", "Logistic w/o MRI")
+colnames(bl_summary) <- c(
+        "Misclass. Rate", "True Pos.", "False Pos.", "True Neg.", "False Neg.")
+
+```
+
+
+
+```{r results='asis'}
+knitr::kable(bl_summary, caption = "Cross-Validation Results", row.names = TRUE)
+```
+
+
+A small subset of patients also had CSF measurements taken at other visits including 12-month and 24-month follow-ups, but these comprised of far fewer observations.
 
 
