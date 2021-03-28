@@ -165,11 +165,13 @@ colnames(bl_summary) <- c(
 
 
 
-```{r results='asis'}
+```{r results='asis', echo=FALSE}
 knitr::kable(bl_summary, caption = "Cross-Validation Results", row.names = TRUE)
 ```
 
 
 A small subset of patients also had CSF measurements taken at other visits including 12-month and 24-month follow-ups, but these comprised of far fewer observations.
+
+
 
 
