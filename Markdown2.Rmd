@@ -6,7 +6,7 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
 ## Model Description
@@ -176,23 +176,25 @@ bl_log_stats2 <- colMeans(dplyr::bind_rows(bl_cv_logit2$c_stats))
 # Combine Data ####
 bl_summary <- dplyr::bind_rows(
         bl_lm_stats1, bl_lm_stats2, bl_log_stats1, bl_log_stats2)
+```
+
+
+
+```{r results='asis', echo=FALSE}
 row.names(bl_summary) <- c(
         "Linear w/MRI", "Linear", "Logistic w/MRI", "Logistic")
 colnames(bl_summary) <- c(
         "Misclass", "T Pos", "F Pos", "T Neg", "F Neg", 
         "DX Corr", "Pos AD", "Neg AD", "% Pos AD")
 
-```
-
-
-
-```{r results='asis', echo=FALSE}
 knitr::kable(bl_summary, caption = "Cross-Validation Results",
              row.names = TRUE, digits = 4, align = 'c')
 ```
 
 
 A small subset of patients also had CSF measurements taken at other visits including 12-month and 24-month follow-ups, but the small sample size led us to omit these particular observations.
+
+\newpage
 
 ## Second Stage Initial Fits
 
