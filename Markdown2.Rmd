@@ -15,17 +15,17 @@ Our model consists of two stages.  Stage one tries to predict $\beta$-amyloid po
 
 Stage two is a deep learning classifier that is fit to tau PET brain scans in order to classify a patient as having AD-related tau pathology or normal tau levels.  The spatial arrangement of the tau protein in the brain has been a topic of recent AD research, and we hope that the deep learning classifier can pick up on these subtle arrangements.  
 
-The ultimate goal is to effectively sort patients which are at high risk for AD using the first stage, and then accurately classify their AD status based on the PET brain scans.  The idea is that a patient would only receive a PET scan if they are labeled as $\beta$-amyloid in the first stage.  If successful, we hope this technique can cut down on unnecessary costly procedures which are invasive and potentially harmful to the patient.  
+The ultimate goal is to effectively sort patients which are at high risk for AD using the first stage, and then accurately classify their AD status based on the PET brain scans.  The idea is that a patient would only receive a PET scan if they are labeled as $\beta$-amyloid in the first stage.  If successful, we hope this technique can cut down on unnecessary costly procedures which are invasive and potentially harmful to the patient while also maintaining a high level of accuracy in quantifying an individual's AD risk.    
 
 We plan to evaluate our success with the following metrics:
 
- - First Stage Accuracy, True Positive, False Negative, & Misclassification Rates
+ - First Stage True Positive, False Negative, Misclassification Rates, and Correlation with AD Diagnosis.
  
  - Second Stage Accuracy, True Positive, False Negative, & Misclassification Rates
  
  - Combined Model Accuracy, True Positive, False Negative, & Misclassification Rates
  
-Ideally, we would want to keep a low false negative rate in the first stage model so that we are excluding as few patients as possible from being potentially classified correctly in the second stage.  That being said, some other metrics of interest will be the distribution of characteristics among those labeled as $\beta$-amyloid negative in the first stage, and if there is any particular information which can be used to fine tune the model.  
+Ideally, we want a high proportion of the subjects predicted as $\beta$-amyloid positive to be diagnosed with AD or MCI.  In particular, we want the proportion of AD/MCI subjects among those predicted as $\beta$-amyloid positive to be higher than the proportion in the general population.   That being said, some other metrics of interest will be the distribution of characteristics among those labeled as $\beta$-amyloid negative in the first stage, and if there is any particular information which can be used to fine tune the model.  
 
 ## First Stage Initial Fits
 
@@ -119,7 +119,27 @@ bl_logit2 <- glm(beta_pos ~ AGE + MALE + APOE4_1 + APOE4_2 + RAVLT_immediate,
 ```
 
 
-5-fold crass-validation was then run for each of the four initial baseline models.  The following code performs the cross-validation and also calculates performance metrics of interest including the misclassification, true positive, and false positive rates.  Specific functions needed for the cross-validation and metrics calculations are defined in the `cv_functions.R` script.  
+5-fold crass-validation was then run for each of the four initial baseline models.  The following code performs the cross-validation and also calculates performance metrics of interest.  The metrics calculated include:
+
+ - Misclassification Rate: Proportion of incorrect predictions
+ 
+ - True Positive Rate: Proportion of $\beta$-amyloid positive cases correctly classified
+ 
+ - False Positive Rate: Proportion of $\beta$-amyloid negative cases classified as positive
+ 
+ - True Negative Rate: Proportion of $\beta$-amyloid negative cases correctly classified
+ 
+ - False Negative Rate: Proportion of $\beta$-amyloid positive cases classified as negative
+ 
+ - DX Correlation: Correlation between positive prediction status and being diagnosed as AD at baseline
+ 
+ - Positive AD: Number of subjects predicted as $\beta$-amyloid positive who were also diagnosed with AD
+ 
+ - Negative AD: Number of subjects predicted as $\beta$-amyloid negative who were also diagnosed with AD
+ 
+ - Percent Positive AD: Percentage of positive predictions who were also diagnosed with AD
+
+Specific functions needed for the cross-validation and metrics calculations are defined in the `cv_functions.R` script.  
 
 ```{r, message=FALSE, warning=FALSE}
 # 5-Fold Cross Validation ####
@@ -157,21 +177,30 @@ bl_log_stats2 <- colMeans(dplyr::bind_rows(bl_cv_logit2$c_stats))
 bl_summary <- dplyr::bind_rows(
         bl_lm_stats1, bl_lm_stats2, bl_log_stats1, bl_log_stats2)
 row.names(bl_summary) <- c(
-        "Linear w/MRI", "Linear w/o MRI", "Logistic w/MRI", "Logistic w/o MRI")
+        "Linear w/MRI", "Linear", "Logistic w/MRI", "Logistic")
 colnames(bl_summary) <- c(
-        "Misclass. Rate", "True Pos.", "False Pos.", "True Neg.", "False Neg.")
+        "Misclass", "T Pos", "F Pos", "T Neg", "F Neg", 
+        "DX Corr", "Pos AD", "Neg AD", "% Pos AD")
 
 ```
 
 
 
 ```{r results='asis', echo=FALSE}
-knitr::kable(bl_summary, caption = "Cross-Validation Results", row.names = TRUE)
+knitr::kable(bl_summary, caption = "Cross-Validation Results",
+             row.names = TRUE, digits = 4, align = 'c')
 ```
 
 
-A small subset of patients also had CSF measurements taken at other visits including 12-month and 24-month follow-ups, but these comprised of far fewer observations.
+A small subset of patients also had CSF measurements taken at other visits including 12-month and 24-month follow-ups, but the small sample size led us to omit these particular observations.
 
+## Second Stage Initial Fits
+
+### Description
+
+### Code and Output
+
+## Discussion and Follow-up
 
 
 

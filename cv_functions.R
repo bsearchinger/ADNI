@@ -1,7 +1,7 @@
 # Cross-Validation Functions for Amyloid Models (for origami package)
 
 # Compute Classification Stats ####
-classStats <- function(pred, truth, cutoff, lt = FALSE) {
+classStats <- function(pred, truth, cutoff, lt = FALSE, truth_dx = NULL) {
   
   if (lt) {
     pred_vals <- ifelse(pred < cutoff, 1, 0)
@@ -10,6 +10,24 @@ classStats <- function(pred, truth, cutoff, lt = FALSE) {
     pred_vals <- ifelse(pred > cutoff, 1, 0)
   }
   p_table <- table(pred_vals, truth)
+  
+  if (is.null(truth_dx)) {
+    dx_corr <- NULL
+    pred_pos_AD <- NULL
+    pred_neg_AD <- NULL
+    pct_pred_pos_AD <- NULL
+  }
+  else{
+    ad_dx <- ifelse(truth_dx == "AD", 1, 0)
+    total_AD <- sum(ad_dx)
+    total_pred_pos <- sum(pred_vals)
+    
+    dx_corr <- cor(ad_dx, pred_vals)
+    pred_pos_AD <- sum(ad_dx[pred_vals == 1])
+    pred_neg_AD <- sum(ad_dx[pred_vals == 0])
+    pct_pred_pos_AD <- pred_pos_AD/total_pred_pos
+  }
+  
   
   tp <- p_table[2,2]/sum(p_table[,2])
   tn <- p_table[1,1]/sum(p_table[,1])
@@ -21,7 +39,11 @@ classStats <- function(pred, truth, cutoff, lt = FALSE) {
               true_pos = tp,
               false_pos = fp,
               true_neg = tn,
-              false_neg = fn)
+              false_neg = fn,
+              dx_corr = dx_corr,
+              pred_pos_AD = pred_pos_AD,
+              pred_neg_AD = pred_neg_AD,
+              pct_pred_pos_AD = pct_pred_pos_AD)
   
   return(out)
 }
@@ -41,7 +63,8 @@ cv_lm <- function(fold, data, reg_form) {
   preds <- predict(mod, newdata = valid_data)
   truth <- valid_data$beta_pos
   c_stats <- classStats(pred = preds, truth = truth,
-                        cutoff = 192, lt = TRUE)
+                        cutoff = 192, lt = TRUE, 
+                        truth_dx = valid_data$DX_bl)
   
   # capture results to be returned as output
   out <- list(coef = data.frame(t(coef(mod))),
@@ -67,7 +90,7 @@ cv_logit <- function(fold, data, reg_form) {
   truth <- valid_data$beta_pos
   
   c_stats <- classStats(pred = preds, truth = truth, 
-                        cutoff = 0.72)  
+                        cutoff = 0.72, truth_dx = valid_data$DX_bl)  
   
   # capture results to be returned as output
   out <- list(coef = data.frame(t(coef(mod))),
