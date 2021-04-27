@@ -133,7 +133,7 @@ cv5_logit6 <- origami::cross_validate(
 
 cv5_logit7 <- origami::cross_validate(
   cv_fun = cv_logit, folds = foldsAP, data = hasAP, cutoff = 0.5,
-  reg_form = "beta_pos_vote ~ AGE + Male + MMSE_bl + LDELTOTAL_BL + ADASQ4_bl + RAVLT_immediate_bl + APOE4_1 + APOE4_2 + AGE*CollegePlus")
+  reg_form = "beta_pos_vote ~ AGE + Male + MMSE_bl + LDELTOTAL_BL + ADASQ4_bl + RAVLT_immediate_bl + APOE4_1 + APOE4_2 + AGE*RAVLT_immediate_bl*CollegePlus + AGE*MMSE_bl*CollegePlus")
 
 
 mmse <- colMeans(dplyr::bind_rows(mmse_logit$c_stats))
@@ -158,8 +158,6 @@ cvs <- dplyr::bind_rows(cv1, cv2, cv3, cv5, cv5, cv6, cv7)
 # cor(hasAP$beta_pos_vote, hasAP$AD_con_any)
 # cor(hasAP$beta_pos_vote, hasAP$any_con)
 
-colnames(hasAP)
-anyNA(noAD$RAVLT_immediate)
 # Full Fits
 fit1 <- glm(beta_pos_vote ~ AGE + Male + MMSE_bl, data = noAD, family = "binomial")
 fit2 <- glm(beta_pos_vote ~ AGE + Male + MMSE_bl + LDELTOTAL_BL, data = noAD, family = "binomial")
@@ -168,7 +166,7 @@ fit4 <- glm(beta_pos_vote ~ AGE + Male + MMSE_bl + LDELTOTAL_BL + ADASQ4_bl + RA
 fit5 <- glm(beta_pos_vote ~ AGE + Male + MMSE_bl + LDELTOTAL_BL + ADASQ4_bl + RAVLT_immediate_bl + APOE4_1 + APOE4_2, data = hasAP, family = "binomial")
 fit6 <- glm(beta_pos_vote ~ AGE + Male + MMSE_bl + LDELTOTAL_BL + ADASQ4_bl + RAVLT_immediate_bl + APOE4_1 + APOE4_2 + PTEDUCAT, data = hasAP, family = "binomial")
 fit7 <- glm(beta_pos_vote ~ AGE + Male + MMSE_bl + LDELTOTAL_BL + ADASQ4_bl + RAVLT_immediate_bl + 
-              APOE4_1 + APOE4_2 + AGE*CollegePlus , data = hasAP, family = "binomial")
+              APOE4_1 + APOE4_2 + AGE*RAVLT_immediate_bl*CollegePlus + AGE*MMSE_bl*CollegePlus , data = hasAP, family = "binomial")
 
 
 # Predictions

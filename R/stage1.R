@@ -39,7 +39,8 @@ model2 <- glm(beta_pos_vote ~ AGE + Male + MMSE_bl + LDELTOTAL_BL +
               data = non_holdout_pos, family = "binomial")
 
 model3 <- glm(beta_pos_vote ~ AGE + Male + MMSE_bl + LDELTOTAL_BL + 
-                ADASQ4_bl + RAVLT_immediate_bl + APOE4_1 + APOE4_2 + AGE*CollegePlus , 
+                ADASQ4_bl + RAVLT_immediate_bl + APOE4_1 + APOE4_2 + 
+                AGE*RAVLT_immediate_bl*CollegePlus + AGE*MMSE_bl*CollegePlus, 
               data = non_holdout_pos, family = "binomial")
 
 pred1 <- predict(model1, newdata = holdout_adnim_bl, type = "response")
@@ -59,10 +60,10 @@ stage1_preds <- data.frame(PTID = holdout_adnim_bl$PTID,
                            m2_pred = pred2,
                            m3_pred = pred3)
 
-write_csv(stage1_preds, "processed_data/state1_preds.csv")
+write_csv(stage1_preds, "processed_data/stage1_preds.csv")
 
 table(stage1_preds$m1_pred, stage1_preds$DX_bl, stage1_preds$AD_conv)
 table(stage1_preds$m2_pred, stage1_preds$DX_bl, stage1_preds$AD_conv)
-table(stage1_preds$m3_pred, stage1_preds$DX_bl, stage1_preds$AD_conv)
+table(stage1_preds$m3_pred, stage1_preds$AD_conv)
 
 
