@@ -12,7 +12,7 @@ PETv <- read_csv("processed_data/master_pet_volume.csv")
 PETs <- read_csv("processed_data/master_pet_suvr.csv")
 
 # Holdout Data
-holdout <- read_csv("ConvImgs/holdout.csv")
+holdout <- read_csv("processed_data/holdout.csv")
 
 # Conversion Data
 adnim <- read_csv("processed_data/adnim.csv",
@@ -29,7 +29,7 @@ adni_conv <- adni_conv[!duplicated(adni_conv),]
 adni_rid <- adnim %>%
   select(RID, PTID)
 adni_rid <- adni_rid[!duplicated(adni_rid), ]
-holdout <- merge(holdout, adni_rid, by.x = "Subject ID", by.y = "PTID", all = FALSE)
+holdout <- merge(holdout, adni_rid, by = "PTID", all = FALSE)
 
 # Filter to Baseline
 # MRI_bl <- MRI %>%
@@ -145,6 +145,7 @@ mm_v_val <- cbind(rep(1, nrow(mm_v_val)), mm_v_val)
 mm_s_train <- model.matrix(AD ~ ., training_set_s[,c(3:155, 161)])
 mm_s_val <- as.matrix(validation_set_s[, c(3:155)])
 mm_s_val <- cbind(rep(1, nrow(mm_s_val)), mm_s_val)
+
 
 # Volume Train
 elastic_net_v_train <- lapply(seq(0, 1, by = 0.1), function(a) {
