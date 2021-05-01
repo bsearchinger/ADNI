@@ -26,10 +26,10 @@ adni_conv <- adnim %>%
 adni_conv <- adni_conv[!duplicated(adni_conv),]
 
 # Holdout RID
-adni_rid <- adnim %>%
-  select(RID, PTID)
-adni_rid <- adni_rid[!duplicated(adni_rid), ]
-holdout <- merge(holdout, adni_rid, by = "PTID", all = FALSE)
+#adni_rid <- adnim %>%
+#  select(RID, PTID)
+#adni_rid <- adni_rid[!duplicated(adni_rid), ]
+#holdout <- merge(holdout, adni_rid, by = "PTID", all = FALSE)
 
 # Filter to Baseline
 # MRI_bl <- MRI %>%
@@ -86,6 +86,7 @@ combined_s_nh <- na.omit(combined_s_nh)
 combined_v_h <- na.omit(combined_v_h)
 combined_s_h <- na.omit(combined_s_h)
 
+#write_csv(combined_s_h, "processed_data/volume_suvr_holdout.csv")
 
 
 cn <- combined_v_nh %>% filter(DX_bl == "CN")
