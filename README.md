@@ -1,4 +1,4 @@
-# Filtering and Classifying ADNI Particiants
+# Filtering and Classifying ADNI Participants
 
 ## Contributors:
 
