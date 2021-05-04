@@ -6,84 +6,40 @@ library(stringr)
 library(origami)
 library(glmnet)
 library(ROCR)
+library(ggpubr)
 source("R/cv_functions.R")
 
 # Read in Amyloid Positivity Data
-amyloid_pos <- read_csv("processed_data/amyloid_pos_data.csv",
+amyloid_pos <- read_csv("processed_data/amyloid_pos_data2.csv",
                         col_types = cols(
-                          RID = col_double(),
-                          PTID = col_character(),
-                          VISCODE = col_character(),
-                          AGE = col_double(),
-                          PTGENDER = col_character(),
-                          PTEDUCAT = col_double(),
-                          APOE4 = col_double(),
-                          DX_bl = col_character(),
-                          DX = col_character(),
-                          FDG_bl = col_double(),
-                          FDG = col_double(),
                           AV45_bl = col_double(),
-                          AV45 = col_double(),
-                          ABETA_bl = col_double(),
-                          ABETA = col_double(),
-                          TAU_bl = col_double(),
-                          TAU = col_double(),
-                          ADAS11_bl = col_double(),
-                          ADAS11 = col_double(),
-                          ADAS13_bl = col_double(),
-                          ADAS13 = col_double(),
-                          ADASQ4_bl = col_double(),
-                          ADASQ4 = col_double(),
-                          LDELTOTAL_BL = col_double(),
-                          LDELTOTAL = col_double(),
-                          MMSE_bl = col_double(),
-                          MMSE = col_double(),
-                          RAVLT_immediate_bl = col_double(),
-                          RAVLT_immediate = col_double(),
-                          RAVLT_learning_bl = col_double(),
-                          RAVLT_learning = col_double(),
-                          RAVLT_forgetting_bl = col_double(),
-                          RAVLT_forgetting = col_double(),
-                          ICV_bl = col_double(),
-                          ICV = col_double(),
-                          AD_con = col_double(),
-                          CN_MCI = col_double(),
-                          CD_AD = col_double(),
-                          MCI_AD = col_double(),
-                          Male = col_double(),
-                          NoHighSch = col_double(),
-                          HighSch = col_double(),
-                          SomeCollege = col_double(),
-                          CollegePlus = col_double(),
-                          APOE4_1 = col_double(),
-                          APOE4_2 = col_double(),
-                          Holdout = col_double(),
-                          AD_con_any = col_double(),
-                          any_con = col_double(),
-                          upenn_any_pos = col_double(),
-                          upenn_pos_bl = col_double(),
-                          UPENN_ABETA_bl = col_double(),
-                          av45_SUVR = col_double(),
-                          av45_pos = col_double(),
-                          br_vol = col_double(),
-                          abeta_pos = col_double(),
-                          beta_pos_vote = col_double()
-                        ))
+                          av45_SUVR_bl = col_double(),
+                          br_vol_bl = col_double()))
+
+                  
 
 # Filter by Baseline, Non-NA, and Holdout 
 baseline <- amyloid_pos %>% 
-  dplyr::filter(VISCODE == "bl", is.na(DX) == F, is.na(AGE) == F)
+  dplyr::filter(VISCODE == "bl", 
+                is.na(DX) == F, 
+                is.na(AGE) == F)
 
 # Subset Holdout Group
 holdout <- baseline %>% filter(Holdout == 1)
-baseline <- baseline %>% filter(Holdout == 0)
+baseline <- baseline %>% filter(Holdout == 0, is.na(RAVLT_immediate_bl) == F)
 
-# Filter Out AD Patients to Predict Amyloid Positivity - Diimensions 1,178 x 57
+
+# Filter Out AD Patients to Predict Amyloid Positivity - Diimensions 1,178 x 57 OLD###
+# Filter Out AD Patients to Predict Amyloid Positivity - Diimensions 1295 x 57 NEW###
 noAD <- baseline %>% filter(DX_bl != "AD")
-# Subset by Patients With Genetic Data Available - Dimensions 1,148 x 57
+# Subset by Patients With Genetic Data Available - Dimensions 1,148 x 57 OLD ###
+# Subset by Patients With Genetic Data Available - Dimensions 1265 x 57 NEW ###
 hasAP <- noAD[!is.na(noAD$APOE4_1), ]
 
+
+
 # Make Folds - 5 Fold CV
+set.seed(12345)
 folds <- folds_vfold(nrow(noAD), V = 5)
 foldsAP <- folds_vfold(nrow(hasAP), V = 5)
 
@@ -224,18 +180,48 @@ aucs <- c(auc1, auc2, auc3, auc4, auc5, auc6, auc7)
 cvs$auc <- aucs
 cvs <- round(cvs, 3)
 
-pos <- noAD %>% filter(beta_pos_vote == 1)
-neg <- noAD %>% filter(beta_pos_vote == 0)
+cvsp <- cvs %>% select(mis_class, true_pos, false_pos, auc, conv_corr, pct_pred_pos_conv, pct_pred_neg_conv)
+colnames(cvsp) <- c("MisClass", "True P", "False P.", " AUC ", "Conv. Corr", "Pct Pos Conv.", "Pct Neg Conv.")
 
-# sum(pos$AD_con_any)/nrow(pos)
-# sum(neg$AD_con_any)/nrow(neg)
-# 
-# sum(pos$any_con)/nrow(pos)
-# sum(neg$any_con)/nrow(neg)
-library(ggpubr)
-cvsp <- cvs %>% select(mis_class, true_pos, false_pos, auc, conv_corr, pct_pred_pos_conv)
-colnames(cvsp) <- c("Miss. Class", "True Pos.", "False Pos.", " AUC ", "Conv. Corr", "% Pos Conv.")
-ggtexttable(cvsp, theme = ttheme(
-  rownames.style = rownames_style(face = "plain")
-))
+sample_cor <- round(cor(noAD$beta_pos_vote, noAD$AD_con_any), 3)
+
+noAD_beta_pos <- noAD %>%
+  filter(beta_pos_vote == 1)
+
+noAD_beta_neg <- noAD %>%
+  filter(beta_pos_vote == 0)
+
+noAD_conv <- noAD %>%
+  filter(AD_con_any == 1)
+
+noAD_notconv <- noAD %>%
+  filter(AD_con_any == 0)
+
+sample_pct_pos_conv <- round(sum(noAD_beta_pos$AD_con_any)/nrow(noAD_beta_pos), 3)
+sample_pct_neg_conv <- round(sum(noAD_beta_neg$AD_con_any)/nrow(noAD_beta_neg), 3)
+
+sample_ad_conv_pos <- round(sum(noAD_conv$beta_pos_vote)/nrow(noAD_conv), 3)
+sample_ad_notconv_pos <- round(sum(noAD_notconv$beta_pos_vote)/nrow(noAD_notconv), 3)
+
+cv_table <- ggtexttable(cvsp, theme = ttheme(
+  rownames.style = rownames_style(face = "plain")))
+
+sample_table <- data.frame(sample_cor, 
+                           sample_pct_pos_conv, 
+                           sample_pct_neg_conv,
+                           sample_ad_conv_pos,
+                           sample_ad_notconv_pos
+                           )
+colnames(sample_table) <- c("AD Conv Corr", 
+                            "Pct Pos AD Conv", 
+                            "Pct Neg AD Conv",
+                            "Pct AD Conv Pos",
+                            "Pct AD Not Conv Pos"
+                            )
+sample_table <- ggtexttable(sample_table,
+                            theme = ttheme(
+                              rownames.style = rownames_style(face = "plain")))
+
+ggsave("figures/amyloid_cv_table.png", cv_table, device = "png")
+ggsave("figures/amyloid_sample_table.png", sample_table, device = "png")
 

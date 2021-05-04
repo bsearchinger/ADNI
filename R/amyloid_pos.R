@@ -12,11 +12,11 @@ require(tidyverse)
 adnim <- read_csv("ADNI_data/ADNIMERGE.csv") # Fix Column Types
 upenn <- read_csv("ADNI_data/UPENNBIOMK_MASTER.csv")
 av45 <- read_csv("ADNI_data/UCBERKELEYAV45_01_14_21.csv")
-holdout <- read_csv("ConvImgs/holdout.csv")
-hid <- unique(holdout$`Subject ID`)
+holdout <- read_csv("processed_data/holdout.csv")
+hid <- unique(holdout$PTID)
 
 # ADNIMERGE ####
-# Relavent Columns of ADNIMERGE
+# Relevant Columns of ADNIMERGE
 adnim_cols <- c("RID", "PTID", "VISCODE", "AGE", "PTGENDER","PTEDUCAT", "APOE4", 
                 "DX_bl", "DX",
                 "FDG_bl", "FDG", 
@@ -76,25 +76,52 @@ upenn_any_pos <- upenn_med %>%
 upenn_pos_bl <- upenn_med %>%
   filter(VISCODE == "bl") %>%
   mutate(upenn_pos_bl = ifelse(ABETA < 192, 1, 0))
-upenn_pos_bl = upenn_pos_bl[,c("RID", "upenn_pos_bl", "ABETA")]
-colnames(upenn_pos_bl) <- c("RID", "upenn_pos_bl", "UPENN_ABETA_bl")
+upenn_pos_bl <- upenn_pos_bl %>% 
+  select(RID, upenn_pos_bl, ABETA) %>%
+  rename(UPENN_ABETA_bl = ABETA)
+  
 upenn_pos <- merge(upenn_any_pos, upenn_pos_bl, by = "RID", all.x = TRUE)
 upenn_pos$upenn_any_pos <- ifelse(upenn_pos$upenn_any_pos, 1, 0)
 
 # UC Berkeley AV45 SUVR
+first_visit <- av45 %>% 
+  group_by(RID) %>%
+  arrange(EXAMDATE, .by_group = TRUE) %>% 
+  summarise(first_vis = first(VISCODE2),
+            first_date = first(EXAMDATE))
+
+first_vis_pos <- rep(NA, nrow(first_visit))
+for (i in 1:nrow(first_visit)) {
+  fv <- av45 %>% 
+    filter(RID == first_visit$RID[i] & VISCODE2 == first_visit$first_vis[i])
+  first_vis_pos[i] <- ifelse(fv$SUMMARYSUVR_WHOLECEREBNORM_1.11CUTOFF[1] == 1, 1, 0)
+}
+
+first_vis_pos <- data.frame(RID = first_visit$RID, first_vis_pos = first_vis_pos)
+
+av45_any_pos <- av45 %>%
+  group_by(RID) %>%
+  summarise(av45_any_pos = any(SUMMARYSUVR_WHOLECEREBNORM_1.11CUTOFF == 1)) %>%
+  mutate(av45_any_pos = ifelse(av45_any_pos, 1, 0))
+
 av45_bl <- av45 %>%
-  filter(VISCODE == "bl")
-av45_bl <- av45_bl[, c("RID", "SUMMARYSUVR_WHOLECEREBNORM", 
-                       "SUMMARYSUVR_WHOLECEREBNORM_1.11CUTOFF", 
-                       "TOTAL_INTRACRANIAL_VOLUME")]
-colnames(av45_bl) <- c("RID", "av45_SUVR", "av45_pos", "br_vol")
+  filter(VISCODE == "bl") %>%
+  select(RID, SUMMARYSUVR_WHOLECEREBNORM,
+         SUMMARYSUVR_WHOLECEREBNORM_1.11CUTOFF,
+         TOTAL_INTRACRANIAL_VOLUME) %>%
+  rename(av45_SUVR_bl = SUMMARYSUVR_WHOLECEREBNORM,
+         av45_pos_bl = SUMMARYSUVR_WHOLECEREBNORM_1.11CUTOFF,
+         br_vol_bl = TOTAL_INTRACRANIAL_VOLUME)
+
+av45_pos <- merge(av45_any_pos, first_vis_pos, by = "RID", all.x = TRUE)
+av45_pos <- merge(av45_pos, av45_bl, by = "RID", all.x = TRUE)
 
 # UC Berkeley FDG
-fdg <- read_csv("ADNI_data/UCBERKELEYFDG_05_28_20.csv")
+#fdg <- read_csv("ADNI_data/UCBERKELEYFDG_05_28_20.csv")
 
 # Merge Into ADNIMERGE
 adnim <- merge(adnim, upenn_pos, by = c("RID"), all.x = TRUE)
-adnim <- merge(adnim, av45_bl, by = c("RID"), all.x = TRUE)
+adnim <- merge(adnim, av45_pos, by = c("RID"), all.x = TRUE)
 
 # Positivity based on ABETA
 adnim <- adnim %>%
@@ -102,23 +129,27 @@ adnim <- adnim %>%
 
 # Filter Out People With No Beta Positivity Measures
 adnim_pos <- adnim %>%
-  filter(upenn_any_pos %in% c(0,1) | av45_pos %in% c(0,1) | abeta_pos %in% c(0,1))
+  filter(upenn_any_pos %in% c(0,1) | av45_any_pos %in% c(0,1) | abeta_pos %in% c(0,1))
 
 # Code Discrepancies as Positive
 beta_pos_vote <- adnim_pos %>% 
-  dplyr::select(abeta_pos, av45_pos, upenn_any_pos) %>%
+  dplyr::select(abeta_pos, av45_any_pos, upenn_any_pos) %>%
   rowSums(na.rm = TRUE)
 adnim_pos$beta_pos_vote <- ifelse(beta_pos_vote > 0, 1, 0)
+
 
 # Filter by baseline
 #adnim_pos_bl <- adnim_pos %>% filter(VISCODE == "bl")
 #adnim_pos_bl <- adnim_pos_bl[!is.na(adnim_pos_bl$DX_bl), ]
 
+### OLD ###
 # Write Amyloid Positivity Data -- Dimensions: 10611 x 57
-write_csv(adnim_pos, "processed_data/amyloid_pos_data.csv")
-write_csv(adnim, "processed_data/adnim.csv")
+#write_csv(adnim_pos, "processed_data/amyloid_pos_data.csv")
+#write_csv(adnim, "processed_data/adnim.csv")
 
-
-
+# NEW ###
+# Write Amyloid Positivity Data -- Dimensions: 12330 x 57
+write_csv(adnim_pos, "processed_data/amyloid_pos_data2.csv")
+write_csv(adnim, "processed_data/adnim2.csv")
 
 

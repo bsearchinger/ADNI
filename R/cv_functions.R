@@ -26,13 +26,16 @@ classStats <- function(pred, truth, cutoff, lt = FALSE, truth_conv) {
     pred_pos_conv <- NULL
     pred_neg_conv <- NULL
     pct_pred_pos_conv <- NULL
+    pct_pred_neg_conv <- NULL
   }
   else{
     total_pred_pos <- sum(pred_vals)
+    total_pred_neg <- length(pred_vals) - total_pred_pos
     conv_corr <- cor(truth_conv, pred_vals)
     pred_pos_conv <- sum(truth_conv[pred_vals == 1])
     pred_neg_conv <- sum(truth_conv[pred_vals == 0])
     pct_pred_pos_conv <- pred_pos_conv/total_pred_pos
+    pct_pred_neg_conv <- pred_neg_conv/total_pred_neg
   }
   
   
@@ -50,7 +53,9 @@ classStats <- function(pred, truth, cutoff, lt = FALSE, truth_conv) {
               conv_corr = conv_corr,
               pred_pos_conv = pred_pos_conv,
               pred_neg_conv = pred_neg_conv,
-              pct_pred_pos_conv = pct_pred_pos_conv)
+              pct_pred_pos_conv = pct_pred_pos_conv,
+              pct_pred_neg_conv = pct_pred_neg_conv
+              )
   
   return(out)
 }

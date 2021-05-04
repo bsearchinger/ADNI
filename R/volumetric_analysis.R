@@ -89,11 +89,6 @@ combined_s_h <- na.omit(combined_s_h)
 #write_csv(combined_s_h, "processed_data/volume_suvr_holdout.csv")
 
 
-cn <- combined_v_nh %>% filter(DX_bl == "CN")
-lmci <- combined_v_nh %>% filter(DX_bl == "LMCI")
-smc <- combined_v_nh %>% filter(DX_bl == "SMC")
-emci <- combined_v_nh %>% filter(DX_bl == "EMCI")
-
 # Training Set
 training_set_v <- combined_v_nh %>% 
   filter(DX_bl %in% c("AD", "CN")) %>%
