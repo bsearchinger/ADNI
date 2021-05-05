@@ -18,12 +18,12 @@ perf <- performance(prediction(holdout_preds, volume_holdout$AD_con_any), "tpr",
 auc <- round(performance(prediction(holdout_preds, volume_holdout$AD_con_any), measure = "auc")@y.values[[1]], 3)
 # AUC 0.679
 
-volume_holdout$preds <- holdout_preds
+volume_holdout$ridge_response <- holdout_preds
 volume_holdout_preds <- volume_holdout %>%
-  select(RID, DX_bl, VISCODE, AD_con_any, preds) %>%
-  mutate(gt0.15 = ifelse(preds > 0.15, 1, 0),
-         gt0.25 = ifelse(preds > 0.25, 1, 0),
-         gt0.5  = ifelse(preds > 0.5, 1, 0)) 
+  select(RID, DX_bl, VISCODE, AD_con_any, ridge_response) %>%
+  mutate(ridge_gt0.15 = ifelse(ridge_response > 0.15, 1, 0),
+         ridge_gt0.25 = ifelse(ridge_response > 0.25, 1, 0),
+         ridge_gt0.5  = ifelse(ridge_response > 0.5, 1, 0)) 
 
 write_csv(volume_holdout_preds, "processed_data/volume_holdout_preds.csv")
 

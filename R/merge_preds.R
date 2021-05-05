@@ -2,13 +2,11 @@
 
 library(readr)
 library(dplyr)
-stage_1_preds <- read_csv("processed_data/stage1_preds.csv")
-
+stage1_preds <- read_csv("processed_data/stage1_preds.csv")
 pet_preds <- read_csv("processed_data/holdout_preds_with_PET_ensemble.csv")
-pet_preds <- pet_preds %>% select(RID, `PET CNN Prediction`)
 ridge_preds <- read_csv("processed_data/volume_holdout_preds.csv")
 
-final_preds <- merge(pet_preds[, c(21,24, 25)], stage_1_preds[, c(2,4,6:8)], by = "RID")
+final_preds <- merge(pet_preds[, c(21,24, 25)], stage_1_preds[, c(2,4,5,7:12)], by = "RID")
 final_preds <- merge(final_preds, ridge_preds[, c(1, 5:8)], by = "RID")
 
 
