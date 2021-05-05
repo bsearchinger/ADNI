@@ -20,7 +20,7 @@ auc <- round(performance(prediction(holdout_preds, volume_holdout$AD_con_any), m
 
 volume_holdout$ridge_response <- holdout_preds
 volume_holdout_preds <- volume_holdout %>%
-  select(RID, DX_bl, VISCODE, AD_con_any, ridge_response) %>%
+  select(PTID, RID, DX_bl, VISCODE, AD_con_any, ridge_response) %>%
   mutate(ridge_gt0.15 = ifelse(ridge_response > 0.15, 1, 0),
          ridge_gt0.25 = ifelse(ridge_response > 0.25, 1, 0),
          ridge_gt0.5  = ifelse(ridge_response > 0.5, 1, 0)) 

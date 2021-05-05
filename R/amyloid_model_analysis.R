@@ -203,8 +203,12 @@ sample_pct_neg_conv <- round(sum(noAD_beta_neg$AD_con_any)/nrow(noAD_beta_neg), 
 sample_ad_conv_pos <- round(sum(noAD_conv$beta_pos_vote)/nrow(noAD_conv), 3)
 sample_ad_notconv_pos <- round(sum(noAD_notconv$beta_pos_vote)/nrow(noAD_notconv), 3)
 
-cv_table <- ggtexttable(cvsp, theme = ttheme(
-  rownames.style = rownames_style(face = "plain")))
+cv_table <- ggtexttable(cvsp, 
+                        theme = ttheme(
+                          base_style = "lBlueWhite", 
+                          rownames.style = rownames_style(face = "plain")))
+cv_table <- tab_add_title(cv_table, text = "Stage 1 Models - 5 Fold CV Metrics",
+                          hjust = -0.65)
 
 sample_table <- data.frame(sample_cor, 
                            sample_pct_pos_conv, 
@@ -219,9 +223,15 @@ colnames(sample_table) <- c("AD Conv Corr",
                             "Pct AD Not Conv Pos"
                             )
 sample_table <- ggtexttable(sample_table,
+                            rows = NULL,
                             theme = ttheme(
+                              base_style = "lBlueWhite",
                               rownames.style = rownames_style(face = "plain")))
+sample_table <- tab_add_title(sample_table, text = "Amyloid Sample Statistics",
+                              hjust = -1.25)
 
-ggsave("figures/amyloid_cv_table.png", cv_table, device = "png")
-ggsave("figures/amyloid_sample_table.png", sample_table, device = "png")
+ggsave("figures/amyloid_cv_table.pdf", cv_table, device = "pdf",
+       width = 7, height = 5, units = "in")
+ggsave("figures/amyloid_sample_table.pdf", sample_table, device = "pdf",
+       width = 7.5, height = 4, units = "in")
 

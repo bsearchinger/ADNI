@@ -9,7 +9,7 @@ library(tidyverse)
 # Read in Data and Helper Funs
 ucb <- read_csv("ADNI_data/UCBERKELEYAV1451_01_14_21.csv")
 adni <- read_csv("ADNI_data/ADNIMERGE.csv")
-source("helper_funs.R")
+source("R/helper_funs.R")
 
 ucb_vol <- dplyr::select(ucb, RID, VISCODE2, dplyr::ends_with("VOLUME"))
 ucb_suvr <- dplyr::select(ucb, RID, VISCODE2, dplyr::ends_with("SUVR"))
