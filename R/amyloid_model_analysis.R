@@ -182,6 +182,7 @@ cvs <- round(cvs, 3)
 
 cvsp <- cvs %>% select(mis_class, true_pos, false_pos, auc, conv_corr, pct_pred_pos_conv, pct_pred_neg_conv)
 colnames(cvsp) <- c("MisClass", "True P", "False P.", " AUC ", "Conv. Corr", "Pct Pos Conv.", "Pct Neg Conv.")
+write_csv(cvsp, "processed_data/amyloid_cv_results.csv")
 
 sample_cor <- round(cor(noAD$beta_pos_vote, noAD$AD_con_any), 3)
 
@@ -222,6 +223,8 @@ colnames(sample_table) <- c("AD Conv Corr",
                             "Pct AD Conv Pos",
                             "Pct AD Not Conv Pos"
                             )
+write_csv(sample_table, "processed_data/amyloid_sample_table.csv")
+
 sample_table <- ggtexttable(sample_table,
                             rows = NULL,
                             theme = ttheme(
@@ -232,6 +235,11 @@ sample_table <- tab_add_title(sample_table, text = "Amyloid Sample Statistics",
 
 ggsave("figures/amyloid_cv_table.pdf", cv_table, device = "pdf",
        width = 7, height = 5, units = "in")
+ggsave("figures/amyloid_cv_table.png", cv_table, device = "png",
+       width = 7, height = 5, units = "in")
+
 ggsave("figures/amyloid_sample_table.pdf", sample_table, device = "pdf",
+       width = 7.5, height = 4, units = "in")
+ggsave("figures/amyloid_sample_table.png", sample_table, device = "png",
        width = 7.5, height = 4, units = "in")
 
