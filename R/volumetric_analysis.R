@@ -1,10 +1,9 @@
 # MRI & PET Volumetric Analysis
 
 library(tidyverse)
-library(nnls)
-library(SuperLearner)
 library(glmnet)
 library(ROCR)
+library(ggpubr)
 library(assertthat)
 # Read in Volumetric Data
 MRI <- read_csv("processed_data/master_mri_volume.csv")
@@ -18,28 +17,12 @@ holdout <- read_csv("processed_data/holdout.csv")
 adnim <- read_csv("processed_data/adnim.csv",
                   col_types = cols(
                     AV45_bl = col_double(),
-                    av45_SUVR = col_double(),
-                    br_vol = col_double()))
+                    av45_SUVR_bl = col_double(),
+                    br_vol_bl = col_double()))
 
 adni_conv <- adnim %>%
   select(RID, AD_con_any, any_con, DX_bl)
 adni_conv <- adni_conv[!duplicated(adni_conv),]
-
-# Holdout RID
-#adni_rid <- adnim %>%
-#  select(RID, PTID)
-#adni_rid <- adni_rid[!duplicated(adni_rid), ]
-#holdout <- merge(holdout, adni_rid, by = "PTID", all = FALSE)
-
-# Filter to Baseline
-# MRI_bl <- MRI %>%
-#   filter(VISCODE == "bl")
-# 
-# PETv_bl <- PETv %>%
-#   filter(VISCODE == "bl")
-# 
-# PETs_bl <- PETs %>%
-#   filter(VISCODE == "bl")
 
 combined_v <- merge(MRI, PETv, by = c("RID", "VISCODE"))
 combined_s <- merge(MRI, PETs, by = c("RID", "VISCODE"))
@@ -86,7 +69,7 @@ combined_s_nh <- na.omit(combined_s_nh)
 combined_v_h <- na.omit(combined_v_h)
 combined_s_h <- na.omit(combined_s_h)
 
-#write_csv(combined_s_h, "processed_data/volume_suvr_holdout.csv")
+write_csv(combined_s_h, "processed_data/volume_suvr_holdout.csv")
 
 
 # Training Set
@@ -296,6 +279,19 @@ auc_df <- data.frame(
                     elastic_net_s_val[[9]]$auc,
                     elastic_net_s_val[[10]]$auc,
                     elastic_net_s_val[[11]]$auc))
+
+write_csv(auc_df, "processed_data/volumetric_auc.csv")
+colnames(auc_df) <- c("alpha", "Volume Train", "Volume Validation", "SUVR Train", "SUVR Validation")
+auc_gg <- ggtexttable(auc_df, rows = NULL,
+                      theme = ttheme(
+                        base_style = "lBlueWhite",
+                        rownames.style = rownames_style(face = "plain")))
+auc_gg <- tab_add_title(auc_gg, text = "Volume vs. SUVR Elastic Net AUC",
+                        hjust = -0.5)
+ggsave("elastic_net_auc.pdf", plot = auc_gg, device = "pdf", 
+       width = 7, height = 4.75, units = "in")
+ggsave("elastic_net_auc.png", plot = auc_gg, device = "png", 
+       width = 7, height = 4.75, units = "in", dpi = 300)
 
 # Best fit is ridge regression with MRI volume + PET SUVR
 final_set <- rbind(training_set_s, validation_set_s)

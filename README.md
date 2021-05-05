@@ -31,7 +31,7 @@ The repository has five main directories: `ADNI_data`, `processed_data`, `R`, `n
 
 Once the data files have been placed in the `ADNI_data` directory, run the following R scripts with the working directory set at the top level of the repo.
 
-### Amyloid Positivity
+### Amyloid Positivity Data Processing
 
 The R script, `R/amyloid_pos.R`, will output two `.csv` files to the `processed_data` directory: `adnim.csv` and `amyloid_pos_data.csv`. The dimensions of the files should be 15171 x 58 and 12330 x 57 respectively. `amyloid_pos_data.csv` contains new variables which describe a subject's amyloid-beta status to be used in subsequent analysis. The variables are as follows:
 
@@ -47,11 +47,11 @@ The R script, `R/amyloid_pos.R`, will output two `.csv` files to the `processed_
 
     insert code chunk here
 
-### MRI and PET Volume
+### MRI and PET Volume Data Processing
 
 The R scripts, `R/MRI_volume.R` and `R/PET_volume.R`, will output three `.csv` files to the `processed_data` directory: `master_mri_volume.csv`, `master_pet_volume.csv`, and `master_pet_suvr.csv`. The dimensions of the files should be 1127 x 47, 1108 x 127, and 1108 x 127 respectively.
 
-### Modeling Amyloid Positivity
+### Stage 1 - Modeling Amyloid Positivity
 
 The R script, `R/amyloid_model_analysis.R`, performs 5-fold cross-validation for seven different candidate models of amyloid-beta positivity as a function of baseline measurements. The binary response variable is `beta_pos_vote` as described above. All candidate models are variations of logistic regression with different classes of predictors. In general, the models start out by containing variables collected from minimally invasive sources, such as cognitive assessment tests, and subsequently add predictors loosely based on the level of invasiveness to the subject required to obtain the information.
 
@@ -64,3 +64,25 @@ PDFs and PNGs of these tables are also created and saved in the `figures` direct
 !["5 Fold Cross Validation Results"](figures/amyloid_cv_table.png)
 
 !["Amyloid Beta and Alzheimer's Disease Conversion"](figures/amyloid_sample_table.png)
+
+### Stage 1 - Predicting Amyloid Positivity
+
+The R script, `R/stage1.R`, predicts amyloid-beta status for the 36 individuals included in the holdout set and outputs the results into `stage1_table.csv` in the `processed_data` directory, along with figures in the `figures` directory.
+
+!["Amyloid Beta Holdout Predictions"](figures/stage1_table.png)
+
+### Stage 2 - Image Processing
+
+### Stage 2 - Modeling Alzheimer's Disease Conversion Probabilities
+
+### Stage 2 - Alzheimer's Disease Conversion Predictions
+
+### Stage 2 - Alternate Predictions via Logistic Ridge Regression
+
+As an alternative to the neural network ensemble, we also propose using a penalized logistic regression on brain volumetric measurements provided by labs at UPENN and UC Berkeley. The measurements come from MRI and tau PET scans. (add more here)
+
+The R script, `R/volumetric_analysis.R`, combines volume measurements from MRI scans separately with volume and SUVR measurements from tau PET scans. The data are then split into training and validation sets leaving out the holdout patients entirely. A custom labeling scheme is implemented to code patients as either AD or not which replicates the type of individuals in the holdout set and also what one might normally encounter in a clinical setting.
+
+The script outputs two training sets (`training_set_volume.csv` and `training_set_suvr.csv`) and two validation sets (`validation_set_volume.csv` and `validation_set_suvr.csv`) to the `processed_data` directory. Figures of the AUC tables for all models are also output.
+
+!["Elastic Net Training and Validation AUC"](figures/elastic_net_auc.png)

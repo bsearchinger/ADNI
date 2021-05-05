@@ -75,4 +75,6 @@ stage1_table <- ggtexttable(stage1_preds,
                                 face = "plain")))
 ggsave("figures/stage1_table.pdf", plot = stage1_table,
        device = "pdf", width = 6, height = 11, units = "in")
+ggsave("figures/stage1_table.png", plot = stage1_table,
+       device = "png", width = 6, height = 11, units = "in")
 
