@@ -10,7 +10,7 @@ library(ggpubr)
 source("R/cv_functions.R")
 
 # Read in Amyloid Positivity Data
-amyloid_pos <- read_csv("processed_data/amyloid_pos_data2.csv",
+amyloid_pos <- read_csv("processed_data/amyloid_pos_data.csv",
                         col_types = cols(
                           AV45_bl = col_double(),
                           av45_SUVR_bl = col_double(),
@@ -182,6 +182,7 @@ cvs <- round(cvs, 3)
 
 cvsp <- cvs %>% select(mis_class, true_pos, false_pos, auc, conv_corr, pct_pred_pos_conv, pct_pred_neg_conv)
 colnames(cvsp) <- c("MisClass", "True P", "False P.", " AUC ", "Conv. Corr", "Pct Pos Conv.", "Pct Neg Conv.")
+write_csv(cvsp, "processed_data/amyloid_cv_results.csv")
 
 sample_cor <- round(cor(noAD$beta_pos_vote, noAD$AD_con_any), 3)
 
@@ -203,8 +204,12 @@ sample_pct_neg_conv <- round(sum(noAD_beta_neg$AD_con_any)/nrow(noAD_beta_neg), 
 sample_ad_conv_pos <- round(sum(noAD_conv$beta_pos_vote)/nrow(noAD_conv), 3)
 sample_ad_notconv_pos <- round(sum(noAD_notconv$beta_pos_vote)/nrow(noAD_notconv), 3)
 
-cv_table <- ggtexttable(cvsp, theme = ttheme(
-  rownames.style = rownames_style(face = "plain")))
+cv_table <- ggtexttable(cvsp, 
+                        theme = ttheme(
+                          base_style = "lBlueWhite", 
+                          rownames.style = rownames_style(face = "plain")))
+cv_table <- tab_add_title(cv_table, text = "Stage 1 Models - 5 Fold CV Metrics",
+                          hjust = -0.65)
 
 sample_table <- data.frame(sample_cor, 
                            sample_pct_pos_conv, 
@@ -218,10 +223,23 @@ colnames(sample_table) <- c("AD Conv Corr",
                             "Pct AD Conv Pos",
                             "Pct AD Not Conv Pos"
                             )
-sample_table <- ggtexttable(sample_table,
-                            theme = ttheme(
-                              rownames.style = rownames_style(face = "plain")))
+write_csv(sample_table, "processed_data/amyloid_sample_table.csv")
 
-ggsave("figures/amyloid_cv_table.png", cv_table, device = "png")
-ggsave("figures/amyloid_sample_table.png", sample_table, device = "png")
+sample_table <- ggtexttable(sample_table,
+                            rows = NULL,
+                            theme = ttheme(
+                              base_style = "lBlueWhite",
+                              rownames.style = rownames_style(face = "plain")))
+sample_table <- tab_add_title(sample_table, text = "Amyloid Sample Statistics",
+                              hjust = -1.25)
+
+ggsave("figures/amyloid_cv_table.pdf", cv_table, device = "pdf",
+       width = 7, height = 5, units = "in")
+ggsave("figures/amyloid_cv_table.png", cv_table, device = "png",
+       width = 7, height = 5, units = "in")
+
+ggsave("figures/amyloid_sample_table.pdf", sample_table, device = "pdf",
+       width = 7.5, height = 4, units = "in")
+ggsave("figures/amyloid_sample_table.png", sample_table, device = "png",
+       width = 7.5, height = 4, units = "in")
 

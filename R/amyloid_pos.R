@@ -149,7 +149,7 @@ adnim_pos$beta_pos_vote <- ifelse(beta_pos_vote > 0, 1, 0)
 
 # NEW ###
 # Write Amyloid Positivity Data -- Dimensions: 12330 x 57
-write_csv(adnim_pos, "processed_data/amyloid_pos_data2.csv")
-write_csv(adnim, "processed_data/adnim2.csv")
+write_csv(adnim_pos, "processed_data/amyloid_pos_data.csv")
+write_csv(adnim, "processed_data/adnim.csv")
 
 
