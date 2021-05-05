@@ -288,9 +288,9 @@ auc_gg <- ggtexttable(auc_df, rows = NULL,
                         rownames.style = rownames_style(face = "plain")))
 auc_gg <- tab_add_title(auc_gg, text = "Volume vs. SUVR Elastic Net AUC",
                         hjust = -0.5)
-ggsave("elastic_net_auc.pdf", plot = auc_gg, device = "pdf", 
+ggsave("figures/elastic_net_auc.pdf", plot = auc_gg, device = "pdf", 
        width = 7, height = 4.75, units = "in")
-ggsave("elastic_net_auc.png", plot = auc_gg, device = "png", 
+ggsave("figures/elastic_net_auc.png", plot = auc_gg, device = "png", 
        width = 7, height = 4.75, units = "in", dpi = 300)
 
 # Best fit is ridge regression with MRI volume + PET SUVR

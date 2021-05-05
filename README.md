@@ -83,6 +83,10 @@ As an alternative to the neural network ensemble, we also propose using a penali
 
 The R script, `R/volumetric_analysis.R`, combines volume measurements from MRI scans separately with volume and SUVR measurements from tau PET scans. The data are then split into training and validation sets leaving out the holdout patients entirely. A custom labeling scheme is implemented to code patients as either AD or not which replicates the type of individuals in the holdout set and also what one might normally encounter in a clinical setting.
 
-The script outputs two training sets (`training_set_volume.csv` and `training_set_suvr.csv`) and two validation sets (`validation_set_volume.csv` and `validation_set_suvr.csv`) to the `processed_data` directory. Figures of the AUC tables for all models are also output.
+The script outputs two training sets (`training_set_volume.csv` and `training_set_suvr.csv`) and two validation sets (`validation_set_volume.csv` and `validation_set_suvr.csv`) to the `processed_data` directory. Figures of the AUC tables for all models are also output, as well as a `.csv` containing the values.  The model with the best cross-validated performance tends to use the MRI volume + PET SUVR data with alpha = 0.  The corresponding penalty is approximately 0.0518844.  
 
 !["Elastic Net Training and Validation AUC"](figures/elastic_net_auc.png)
+
+The training and validation sets are combined into a final file titled `final_set0.0518844239876985.csv` which houses the full penalty value and is written to the `processed_data` directory.  This file is then read into `R/stage2.R` script which fits the model on the combined data and predicts the results for individuals in the holdout set who received these scans.  Those predictions are written to `processed_data/volume_holdout_preds.csv`.
+
+
