@@ -33,7 +33,7 @@ Once the data files have been placed in the `ADNI_data` directory, run the follo
 
 ### Amyloid Positivity
 
-The R script, `R/amyloid_pos.R`, will output two `.csv` files to the `processed_data` directory: `adnim.csv` and `amyloid_pos_data.csv`.  The dimensions of the files should be 15171 x 56 and 10611 x 57 respectively.
+The R script, `R/amyloid_pos.R`, will output two `.csv` files to the `processed_data` directory: `adnim.csv` and `amyloid_pos_data.csv`.  The dimensions of the files should be 15171 x 58 and 12330 x 57 respectively.
 
 ```
 insert code chunk here

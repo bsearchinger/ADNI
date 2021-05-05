@@ -10,7 +10,7 @@ library(ggpubr)
 source("R/cv_functions.R")
 
 # Read in Amyloid Positivity Data
-amyloid_pos <- read_csv("processed_data/amyloid_pos_data2.csv",
+amyloid_pos <- read_csv("processed_data/amyloid_pos_data.csv",
                         col_types = cols(
                           AV45_bl = col_double(),
                           av45_SUVR_bl = col_double(),
