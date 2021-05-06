@@ -29,15 +29,14 @@ The repository has five main directories: `ADNI_data`, `processed_data`, `R`, `n
 
 Additionally, image data must be downloaded and put into the appropriate place within `CNN`. Note that the image files must be `Nifti` (.nii) formatted. This is not necessarily the default file format within ADNI, however all image files can be downloaded as `Nifti` from the ADNI website. MRI image files go into the `MRI_holdout` and `MRI_training` files within the `MRI_Data` directory, and the corresponding csv file descriptions go into the `MRI_csv` directory. The same structure holds for PET scans. Only the holdout files are required for code replication, as trained models exist in the `trained_cn_ad_mri` and `trained_cn_ad_pet_2` directories.
 
-The holdout set used for final evaluation consists of data from 36 individuals. Their individual ADNI subject IDs can be obtained by utilizing the Advanced Search (beta) functionality in the Search tab at https://www.loni.usc.edu/.
+The holdout set used for final evaluation consists of data from 36 individuals. Their individual ADNI subject IDs can be obtained by utilizing the Advanced Search (beta) functionality in the Search tab at <https://www.loni.usc.edu/>.
 
-1. Search for pre-processed "MPR; GradWarp; B1 Correction; N3; Scaled" MRI images for CN, AD, SCM, EMCI, and LMCI participants with of the ADNI study.  
-2. Download the 2,595 results as a `.csv`.
-3. Search for pre-processed "AV1451 Coreg, Avg, Std Img and Vox Siz, Uniform Resolution" PET images for CN, AD, SCM, EMCI, and LMCI participants with of the ADNI study.
-4. Download the 1,255 results as a `.csv`.
-5. Inner join the two files based on the Subject ID column to get observations of 36 unique participants to use as the holdout set.
-6. Save this merged file as `holdout.csv` in the `processed_data` directory.
-
+1.  Search for pre-processed "MPR; GradWarp; B1 Correction; N3; Scaled" MRI images for CN, AD, SCM, EMCI, and LMCI participants with of the ADNI study.  
+2.  Download the 2,595 results as a `.csv`.
+3.  Search for pre-processed "AV1451 Coreg, Avg, Std Img and Vox Siz, Uniform Resolution" PET images for CN, AD, SCM, EMCI, and LMCI participants with of the ADNI study.
+4.  Download the 1,255 results as a `.csv`.
+5.  Inner join the two files based on the Subject ID column to get observations of 36 unique participants to use as the holdout set.
+6.  Save this merged file as `holdout.csv` in the `processed_data` directory.
 
 ## Code Replication
 
