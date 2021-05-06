@@ -12,7 +12,7 @@ require(tidyverse)
 adnim <- read_csv("ADNI_data/ADNIMERGE.csv") # Fix Column Types
 upenn <- read_csv("ADNI_data/UPENNBIOMK_MASTER.csv")
 av45 <- read_csv("ADNI_data/UCBERKELEYAV45_01_14_21.csv")
-holdout <- read_csv("processed_data/holdout.csv")
+holdout <- read_csv("processed_data/holdout.csv") %>% mutate(PTID = `Subject ID`)
 hid <- unique(holdout$PTID)
 
 # ADNIMERGE ####

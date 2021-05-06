@@ -29,6 +29,16 @@ The repository has five main directories: `ADNI_data`, `processed_data`, `R`, `n
 
 Additionally, image data must be downloaded and put into the appropriate place within `CNN`. Note that the image files must be `Nifti` (.nii) formatted. This is not necessarily the default file format within ADNI, however all image files can be downloaded as `Nifti` from the ADNI website. MRI image files go into the `MRI_holdout` and `MRI_training` files within the `MRI_Data` directory, and the corresponding csv file descriptions go into the `MRI_csv` directory. The same structure holds for PET scans. Only the holdout files are required for code replication, as trained models exist in the `trained_cn_ad_mri` and `trained_cn_ad_pet_2` directories.
 
+The holdout set used for final evaluation consists of data from 36 individuals. Their individual ADNI subject IDs can be obtained by utilizing the Advanced Search (beta) functionality in the Search tab at https://www.loni.usc.edu/.
+
+1. Search for pre-processed "MPR; GradWarp; B1 Correction; N3; Scaled" MRI images for CN, AD, SCM, EMCI, and LMCI participants with of the ADNI study.  
+2. Download the 2,595 results as a `.csv`.
+3. Search for pre-processed "AV1451 Coreg, Avg, Std Img and Vox Siz, Uniform Resolution" PET images for CN, AD, SCM, EMCI, and LMCI participants with of the ADNI study.
+4. Download the 1,255 results as a `.csv`.
+5. Inner join the two files based on the Subject ID column to get observations of 36 unique participants to use as the holdout set.
+6. Save this merged file as `holdout.csv` in the `processed_data` directory.
+
+
 ## Code Replication
 
 Once the data files have been placed in the `ADNI_data` and `CNN` directories, run the following scripts with the working directory set at the top level of the repo.
@@ -77,11 +87,11 @@ The iPython notebooks `MRI_Ensemble` and `PET_Ensemble` each use a 9 layer 2D CN
 
 Each model uses 10 coronal central brain slices to ultimately classify patients as CN or AD. This means there are 10 models for each modality each corresponding to a specific slice. These slices are preconfigured, and whole brain scan Nifti files should be placed into the correct directories without modifications.
 
-A validation split of 10% of the training dataset is automatically computed. Then, for each slice, models are trained using 5 fold cross-validation. The fold with the highest validation accuracy is retained and saved into the corresponding directory, noted above. 
+A validation split of 10% of the training dataset is automatically computed. Then, for each slice, models are trained using 5 fold cross-validation. The fold with the highest validation accuracy is retained and saved into the corresponding directory, noted above.
 
-If only replication is desired, then it's not advisable to retrain all models as the process is time consuming. However, the code is all designed  to be parallelized, so access to a computing cluster significantly increases computation speed. Whether or not the models are retrained, the script then serially loads in each model for holdout prediction. Each of the n image files in the holdout set are then run through each model, yielding n softmax regression probabilities of patients belonging in the AD group. This is repeated 10 times, once for each slice, yielding a n x 10 matrix of predictions. This is distilled into a boolean n x 1 vector using the rule average(P(1)) >= .4, that is average of all softmax probabilities of AD across all 10 slices greater than 40%. 
+If only replication is desired, then it's not advisable to retrain all models as the process is time consuming. However, the code is all designed to be parallelized, so access to a computing cluster significantly increases computation speed. Whether or not the models are retrained, the script then serially loads in each model for holdout prediction. Each of the n image files in the holdout set are then run through each model, yielding n softmax regression probabilities of patients belonging in the AD group. This is repeated 10 times, once for each slice, yielding a n x 10 matrix of predictions. This is distilled into a boolean n x 1 vector using the rule average(P(1)) \>= .4, that is average of all softmax probabilities of AD across all 10 slices greater than 40%.
 
-The n image files are actually comprised of multiple observations of m < n patients. This approach maximizes the amount of information available for each patient, but the number of scans per patient are not consistent between patients. The n x 1 boolean vector is then compressed into an m x 1 numeric vector by simply averaging the prediction labels for each patient. These results are then saved in the `processed_data` directory by default.
+The n image files are actually comprised of multiple observations of m \< n patients. This approach maximizes the amount of information available for each patient, but the number of scans per patient are not consistent between patients. The n x 1 boolean vector is then compressed into an m x 1 numeric vector by simply averaging the prediction labels for each patient. These results are then saved in the `processed_data` directory by default.
 
 Note that the steps laid out above are for a single modality, that is either PET or MRI. While these steps are the same, they must be run twice--once for each modality.
 
@@ -89,7 +99,7 @@ Also note that `nitorch` is a custom package that only appears to exist in [this
 
 ### Stage 2 - Alzheimer's Disease Conversion Ensemble Predictions
 
-There should now be two csv files within the `processed_data` directory, one with MRI predictions and one with PET predictions. There should also be a file named `final_preds.csv` within the directory, which gives the true AD conversion labels as well as the Stage 1 model prediction labels. The default ensemble predictions are also contained in `final_preds.csv`, but they can also be recalculated using the rule MRI_prediction + PET_prediction >= 1. This gives equal weighting to both modalities, and guarantees that consistent positive predictions for a single modality will guarantee a positive prediction for the ensemble.
+There should now be two csv files within the `processed_data` directory, one with MRI predictions and one with PET predictions. There should also be a file named `final_preds.csv` within the directory, which gives the true AD conversion labels as well as the Stage 1 model prediction labels. The default ensemble predictions are also contained in `final_preds.csv`, but they can also be recalculated using the rule MRI_prediction + PET_prediction \>= 1. This gives equal weighting to both modalities, and guarantees that consistent positive predictions for a single modality will guarantee a positive prediction for the ensemble.
 
 The iPython notebook `Analysis.ipynb` within the `CNN` directory assess the accuracy metrics of the ensembled Stage 2 model. If the ensemble predictions were recalculated, then the recalculated values should replace the default values in the `MRI_PET_Ensemble` column of `final_preds.csv`. The script then generates the confusion matrices shown below, and saves them in the `figures` directory.
 
@@ -103,11 +113,8 @@ As an alternative to the neural network ensemble, we also propose using a penali
 
 The R script, `R/volumetric_analysis.R`, combines volume measurements from MRI scans separately with volume and SUVR measurements from tau PET scans. The data are then split into training and validation sets leaving out the holdout patients entirely. A custom labeling scheme is implemented to code patients as either AD or not which replicates the type of individuals in the holdout set and also what one might normally encounter in a clinical setting.
 
-The script outputs two training sets (`training_set_volume.csv` and `training_set_suvr.csv`) and two validation sets (`validation_set_volume.csv` and `validation_set_suvr.csv`) to the `processed_data` directory. Figures of the AUC tables for all models are also output, as well as a `.csv` containing the values.  The model with the best cross-validated performance tends to use the MRI volume + PET SUVR data with alpha = 0.  The corresponding penalty is approximately 0.0518844.  
+The script outputs two training sets (`training_set_volume.csv` and `training_set_suvr.csv`) and two validation sets (`validation_set_volume.csv` and `validation_set_suvr.csv`) to the `processed_data` directory. Figures of the AUC tables for all models are also output, as well as a `.csv` containing the values. The model with the best cross-validated performance tends to use the MRI volume + PET SUVR data with alpha = 0. The corresponding penalty is approximately 0.0518844.
 
 !["Elastic Net Training and Validation AUC"](figures/elastic_net_auc.png)
 
-The training and validation sets are combined into a final file titled `final_set0.0518844239876985.csv` which houses the full penalty value and is written to the `processed_data` directory.  This file is then read into `R/stage2.R` script which fits the model on the combined data and predicts the results for individuals in the holdout set who received these scans.  Those predictions are written to `processed_data/volume_holdout_preds.csv`.
-
-
-
+The training and validation sets are combined into a final file titled `final_set0.0518844239876985.csv` which houses the full penalty value and is written to the `processed_data` directory. This file is then read into `R/stage2.R` script which fits the model on the combined data and predicts the results for individuals in the holdout set who received these scans. Those predictions are written to `processed_data/volume_holdout_preds.csv`.
