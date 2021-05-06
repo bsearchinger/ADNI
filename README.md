@@ -5,7 +5,7 @@
 -   [Brian Collica](https://github.com/bcollica)
 -   James Koo
 -   Ryan Roggenkemper
--   Ben Searchinger
+-   [Ben Searchinger](https://github.com/bsearchinger)
 
 ## TLDR
 
@@ -27,9 +27,11 @@ The repository has five main directories: `ADNI_data`, `processed_data`, `R`, `n
 -   `ADNI_UCD_WMH_09_01_20.csv`: white matter hyperintensities (University of California, Davis).
 -   `ADNI_PICSLASHS_05_05_20.csv`: medial temporal lobe measurements (University of Pennsylvania).
 
+Additionally, image data must be downloaded and put into the appropriate place within `CNN`. Note that the image files must be `Nifti` (.nii) formatted. This is not necessarily the default file format within ADNI, however all image files can be downloaded as `Nifti` from the ADNI website. MRI image files go into the `MRI_holdout` and `MRI_training` files within the `MRI_Data` directory, and the corresponding csv file descriptions go into the `MRI_csv` directory. The same structure holds for PET scans. Only the holdout files are required for code replication, as trained models exist in the `trained_cn_ad_mri` and `trained_cn_ad_pet_2` directories.
+
 ## Code Replication
 
-Once the data files have been placed in the `ADNI_data` directory, run the following R scripts with the working directory set at the top level of the repo.
+Once the data files have been placed in the `ADNI_data` and `CNN` directories, run the following scripts with the working directory set at the top level of the repo.
 
 ### Amyloid Positivity Data Processing
 
@@ -42,10 +44,6 @@ The R script, `R/amyloid_pos.R`, will output two `.csv` files to the `processed_
 -   `av45_any_pos`: 1 if subject was amyloid-beta positive at any time period AV45 analysis provided by UC Berkeley, 0 otherwise.
 -   `abeta_pos`: 1 if subject had a raw ABETA measurement below 977 at any time period, 0 otherwise.
 -   `beta_pos_vote`: 1 if any one of `abeta_pos`, `av45_any_pos`, or `upenn_any_pos` is 1, 0 otherwise.
-
-<!-- -->
-
-    insert code chunk here
 
 ### MRI and PET Volume Data Processing
 
@@ -75,7 +73,29 @@ The R script, `R/stage1.R`, predicts amyloid-beta status for the 36 individuals 
 
 ### Stage 2 - Modeling Alzheimer's Disease Conversion Probabilities
 
-### Stage 2 - Alzheimer's Disease Conversion Predictions
+The iPython notebooks `MRI_Ensemble` and `PET_Ensemble` each use a 9 layer 2D CNNs to classify patients in the training set as either cognitively normal (CN) or Alzheimer's disease (AD). They consider MRI and tau PET scans separately, to later ensemble together.
+
+Each model uses 10 coronal central brain slices to ultimately classify patients as CN or AD. This means there are 10 models for each modality each corresponding to a specific slice. These slices are preconfigured, and whole brain scan Nifti files should be placed into the correct directories without modifications.
+
+A validation split of 10% of the training dataset is automatically computed. Then, for each slice, models are trained using 5 fold cross-validation. The fold with the highest validation accuracy is retained and saved into the corresponding directory, noted above. 
+
+If only replication is desired, then it's not advisable to retrain all models as the process is time consuming. However, the code is all designed  to be parallelized, so access to a computing cluster significantly increases computation speed. Whether or not the models are retrained, the script then serially loads in each model for holdout prediction. Each of the n image files in the holdout set are then run through each model, yielding n softmax regression probabilities of patients belonging in the AD group. This is repeated 10 times, once for each slice, yielding a n x 10 matrix of predictions. This is distilled into a boolean n x 1 vector using the rule average(P(1)) >= .4, that is average of all softmax probabilities of AD across all 10 slices greater than 40%. 
+
+The n image files are actually comprised of multiple observations of m < n patients. This approach maximizes the amount of information available for each patient, but the number of scans per patient are not consistent between patients. The n x 1 boolean vector is then compressed into an m x 1 numeric vector by simply averaging the prediction labels for each patient. These results are then saved in the `processed_data` directory by default.
+
+Note that the steps laid out above are for a single modality, that is either PET or MRI. While these steps are the same, they must be run twice--once for each modality.
+
+Also note that `nitorch` is a custom package that only appears to exist in [this Github repository](https://github.com/balbasty/nitorch). We do not recommend trying to modify these files or install any other packages called `nitorch`.
+
+### Stage 2 - Alzheimer's Disease Conversion Ensemble Predictions
+
+There should now be two csv files within the `processed_data` directory, one with MRI predictions and one with PET predictions. There should also be a file named `final_preds.csv` within the directory, which gives the true AD conversion labels as well as the Stage 1 model prediction labels. The default ensemble predictions are also contained in `final_preds.csv`, but they can also be recalculated using the rule MRI_prediction + PET_prediction >= 1. This gives equal weighting to both modalities, and guarantees that consistent positive predictions for a single modality will guarantee a positive prediction for the ensemble.
+
+The iPython notebook `Analysis.ipynb` within the `CNN` directory assess the accuracy metrics of the ensembled Stage 2 model. If the ensemble predictions were recalculated, then the recalculated values should replace the default values in the `MRI_PET_Ensemble` column of `final_preds.csv`. The script then generates the confusion matrices shown below, and saves them in the `figures` directory.
+
+!["Stage 2 Ensemble Predictions, No Stage 1 Filtering"](figures/stage_2_ensemble_preds_no_filtering.png)
+
+!["Stage 2 Ensemble Predictions, Stage 1 Filtered"](figures/stage_2_ensemble_preds_filtered.png)
 
 ### Stage 2 - Alternate Predictions via Logistic Ridge Regression
 
