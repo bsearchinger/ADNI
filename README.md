@@ -110,3 +110,4 @@ The script outputs two training sets (`training_set_volume.csv` and `training_se
 The training and validation sets are combined into a final file titled `final_set0.0518844239876985.csv` which houses the full penalty value and is written to the `processed_data` directory.  This file is then read into `R/stage2.R` script which fits the model on the combined data and predicts the results for individuals in the holdout set who received these scans.  Those predictions are written to `processed_data/volume_holdout_preds.csv`.
 
 
+

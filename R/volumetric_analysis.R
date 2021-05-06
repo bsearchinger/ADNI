@@ -233,6 +233,24 @@ plot(elastic_net_v_train[[10]]$perf, col = c[10], add = TRUE)
 plot(elastic_net_v_train[[11]]$perf, col = c[11], add = TRUE)
 
 
+suvr_val_preds <- elastic_net_s_val$alpha000$pred_vals[,1]
+suvr_val_truth <- validation_set_s$AD_con_any
+suvr_val_preds <- data.frame(truth = suvr_val_truth,
+                             preds = suvr_val_preds)
+write_csv(suvr_val_preds, "processed_data/suvr_val_preds.csv")
+suvr_val_preds <- suvr_val_preds %>%
+  mutate(c25 = ifelse(preds > 0.25, 1, 0),
+         c50 = ifelse(preds > 0.50, 1, 0),
+         c75 = ifelse(preds > 0.75, 1, 0))
+
+table(suvr_val_preds$truth, suvr_val_preds$c25)
+table(suvr_val_preds$truth, suvr_val_preds$c50)
+table(suvr_val_preds$truth, suvr_val_preds$c75)
+
+sum(diag(table(suvr_val_preds$truth, suvr_val_preds$c25)))/nrow(suvr_val_preds)
+sum(diag(table(suvr_val_preds$truth, suvr_val_preds$c50)))/nrow(suvr_val_preds)
+sum(diag(table(suvr_val_preds$truth, suvr_val_preds$c75)))/nrow(suvr_val_preds)
+
 auc_df <- data.frame(
   alpha = seq(0, 1, by = 0.1), 
  auc_volume_train = c(elastic_net_v_train[[1]]$auc,

@@ -166,8 +166,9 @@ plot(perf4, col = c[4], add = TRUE)
 plot(perf5, col = c[5], add = TRUE)
 plot(perf6, col = c[6], add = TRUE)
 plot(perf7, col = c[7], add = TRUE)
-legend(x = 0.5, y = 0.45, col = c, lty = 1, lwd = 2, cex = 0.75,
+legend(x = "bottomright", col = c, lty = 1, lwd = 2, cex = 0.45,
        title = c("Model Description & AUC"),
+       ncol = 2, text.width = 0.35,
        legend = c(paste("Cog 1", auc1, sep = " - "),
                   paste("Cog 2", auc2, sep = " - "), 
                   paste("Cog 3", auc3, sep = " - "),
