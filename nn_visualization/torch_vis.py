@@ -86,11 +86,13 @@ def lrp_image(model, image,
                         beta = beta,
                         method = "b-rule")
     # run lrp, remove extra dims from result
-    model_out, lrp_out = lrp_model.innvestigate(image, rel_for_class = 0)
+    model_out, lrp_out = lrp_model.innvestigate(image, rel_for_class = rel_for_class)
     lrp_out = lrp_out[0, 0]
     
     # convert to numpy array
-    return lrp_out.detach().numpy()
+    lrp_out = lrp_out.detach().numpy()
+    lrp_out = np.abs(lrp_out)
+    return lrp_out
 
 
 
@@ -659,12 +661,12 @@ class InnvestigateModel(torch.nn.Module):
         if method == "b-rule" and float(beta) in (-1., 0):
             which = "positive" if beta == -1 else "negative"
             which_opp = "negative" if beta == -1 else "positive"
-            print("WARNING: With the chosen beta value, "
-                  "only " + which + " contributions "
-                  "will be taken into account.\nHence, "
-                  "if in any layer only " + which_opp +
-                  " contributions exist, the "
-                  "overall relevance will not be conserved.\n")
+            # print("WARNING: With the chosen beta value, "
+            #       "only " + which + " contributions "
+            #       "will be taken into account.\nHence, "
+            #       "if in any layer only " + which_opp +
+            #       " contributions exist, the "
+            #       "overall relevance will not be conserved.\n")
 
     def cuda(self, device=None):
         self.device = torch.device("cuda", device)
