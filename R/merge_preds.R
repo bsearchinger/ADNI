@@ -9,9 +9,6 @@ ensemble_preds <- read_csv("processed_data/MRI_PET_Ensemble_Preds.csv") %>%
   select(PTID, MRI_Score, PET_Score, MRI_PET_Ensemble, AD_Conv)
 #ridge_preds <- read_csv("processed_data/volume_holdout_preds.csv")
 
-colnames(ensemble_preds)
-colnames(stage1_preds)
-
 final_preds <- merge(stage1_preds, ensemble_preds, by = "PTID")
 write_csv(final_preds, "processed_data/final_preds.csv")
 

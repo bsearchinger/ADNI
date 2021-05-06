@@ -9,7 +9,7 @@
 
 ## TLDR
 
-This repository contains R and Python code for reproducing our analysis of data from the Alzheimer's Disease Neuroimaging Initiative (ADNI). The model is a two-stage process whereby participants are filtered based their estimated risk for being amyloid-beta positive, and then subsequently classified as either high or low risk for Alzheimer's Disease.
+This repository contains R and Python code for reproducing our analysis of data from the Alzheimer's Disease Neuroimaging Initiative (ADNI). The model is a two-stage process whereby participants are filtered based on their estimated risk for being amyloid-beta positive, and then subsequently classified as either high or low risk for converting to Alzheimer's Disease.
 
 ## Data Acquisition
 
