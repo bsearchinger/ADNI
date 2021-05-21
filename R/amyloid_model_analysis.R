@@ -109,11 +109,7 @@ cv6 <- colMeans(dplyr::bind_rows(cv5_logit6$c_stats))
 cv7 <- colMeans(dplyr::bind_rows(cv5_logit7$c_stats))
 
 cvs <- dplyr::bind_rows(cv1, cv2, cv3, cv5, cv5, cv6, cv7)
-# cor(noAD$beta_pos_vote, noAD$AD_con_any)
-# cor(noAD$beta_pos_vote, noAD$any_con)
-# 
-# cor(hasAP$beta_pos_vote, hasAP$AD_con_any)
-# cor(hasAP$beta_pos_vote, hasAP$any_con)
+
 
 mmse.fit <- glm(beta_pos_vote ~ MMSE_bl, data = hasAP, family = "binomial")
 ldel.fit <- glm(beta_pos_vote ~ LDELTOTAL_BL, data = hasAP, family = "binomial")

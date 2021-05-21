@@ -72,6 +72,7 @@ PDFs and PNGs of these tables are also created and saved in the `figures` direct
 
 !["Amyloid Beta and Alzheimer's Disease Conversion"](figures/amyloid_sample_table.png)
 
+
 ### Stage 1 - Predicting Amyloid Positivity
 
 The R script, `R/stage1.R`, predicts amyloid-beta status for the 36 individuals included in the holdout set and outputs the results into `stage1_table.csv` in the `processed_data` directory, along with figures in the `figures` directory.
