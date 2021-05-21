@@ -94,7 +94,7 @@ The n image files are actually comprised of multiple observations of m \< n pati
 
 Note that the steps laid out above are for a single modality, that is either PET or MRI. While these steps are the same, they must be run twice--once for each modality.
 
-Also note that `nitorch` is a custom package that only appears to exist in [this Github repository](https://github.com/balbasty/nitorch). We do not recommend trying to modify these files or install any other packages called `nitorch`.
+Also note that `nitorch` is a custom package that only appears to exist in [this Github repository](https://github.com/moboehle/Pytorch-LRP/tree/master/nitorch). We do not recommend trying to modify these files or install any other packages called `nitorch`.
 
 ### Stage 2 - Alzheimer's Disease Conversion Ensemble Predictions
 
