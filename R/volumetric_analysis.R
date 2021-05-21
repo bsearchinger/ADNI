@@ -186,7 +186,8 @@ elastic_net_s_train <- lapply(seq(0, 1, by = 0.1), function(a) {
              lambda = lambda,
              coef = pred_coef,
              perf = perf,
-             auc = auc
+             auc = auc,
+             model = fit
   )
   return(out)
 })

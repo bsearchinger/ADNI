@@ -7,6 +7,7 @@ library(origami)
 library(glmnet)
 library(ROCR)
 library(ggpubr)
+library(stargazer)
 source("R/cv_functions.R")
 
 # Read in Amyloid Positivity Data
@@ -114,6 +115,28 @@ cvs <- dplyr::bind_rows(cv1, cv2, cv3, cv5, cv5, cv6, cv7)
 # cor(hasAP$beta_pos_vote, hasAP$AD_con_any)
 # cor(hasAP$beta_pos_vote, hasAP$any_con)
 
+mmse.fit <- glm(beta_pos_vote ~ MMSE_bl, data = hasAP, family = "binomial")
+ldel.fit <- glm(beta_pos_vote ~ LDELTOTAL_BL, data = hasAP, family = "binomial")
+adas.fit <- glm(beta_pos_vote ~ ADASQ4_bl, data = hasAP, family = "binomial")
+ravlt.fit <- glm(beta_pos_vote ~ RAVLT_immediate_bl, data = hasAP, family = "binomial")
+
+question_table <- stargazer(mmse.fit, ldel.fit, adas.fit, ravlt.fit,
+                            header = FALSE,
+                            title = "Cognitive Assessments",
+                            covariate.labels = c("MMSE", "LDEL", "ADAS", "RAVLT"),
+                            dep.var.labels = c("beta-amyloid Positive"))
+readr::write_lines(question_table, "figures/quest_tab.tex")
+
+full_tab <- stargazer(fit1, fit2, fit3, fit4, fit5, fit6,
+                      header = FALSE,
+                      title = "Logistic Models",
+                      covariate.labels = c("Age", "Male", 
+                                           "MMSE", "LDEL", "ADAS", "RAVLT",
+                                           "APOE4 - 1", "APOE4 - 2", 
+                                           "Educ"),
+                      dep.var.labels = c("beta-amyloid Positive"))
+readr::write_lines(full_tab, "figures/stage1.tex")
+
 # Full Fits
 fit1 <- glm(beta_pos_vote ~ AGE + Male + MMSE_bl, data = noAD, family = "binomial")
 fit2 <- glm(beta_pos_vote ~ AGE + Male + MMSE_bl + LDELTOTAL_BL, data = noAD, family = "binomial")
@@ -198,7 +221,7 @@ noAD_conv <- noAD %>%
 
 noAD_notconv <- noAD %>%
   filter(AD_con_any == 0)
-
+sum(noAD_beta_neg$AD_con_any)
 sample_pct_pos_conv <- round(sum(noAD_beta_pos$AD_con_any)/nrow(noAD_beta_pos), 3)
 sample_pct_neg_conv <- round(sum(noAD_beta_neg$AD_con_any)/nrow(noAD_beta_neg), 3)
 
@@ -243,4 +266,9 @@ ggsave("figures/amyloid_sample_table.pdf", sample_table, device = "pdf",
        width = 7.5, height = 4, units = "in")
 ggsave("figures/amyloid_sample_table.png", sample_table, device = "png",
        width = 7.5, height = 4, units = "in")
+
+
+
+
+
 
