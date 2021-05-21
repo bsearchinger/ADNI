@@ -64,7 +64,7 @@ The R script, `R/amyloid_model_analysis.R`, performs 5-fold cross-validation for
 
 For example, the predictors for model 1 include age, sex, and the subject's baseline score on the Mini Mental State Examination (MMSE_bl). Model 2 includes age, sex, MMSE, and the subject's baseline delayed recall score on the Logical Memory test (LDELTOTAL_bl), and so on. Models 1 - 4 do not contain any genetic markers, but models 5 - 7 include genetic results for the presence of Apolipoprotein E on either one (APOE_1) or two (APOE_2) alleles. The regression table below displays results for models 1 - 6 using observations from baseline visits of the full training data.
 
-!["Logistic Models"](figures/stage1_fits.png)
+<img src="figures/stage1_fits.png" alt="&quot;Logistic Models&quot;" width="823"/>
 
 The script will output two `.csv` files to the `processed_data` directory: `amyloid_cv_table.csv` and `amyloid_sample_table.csv`. The first contains the cross-validated estimates of the various performance metrics, and the second contain summary statistics regarding the relationship between amyloid-beta positivity and Alzheimer's Disease conversion rates in the sample of individuals considered in this analysis.
 
